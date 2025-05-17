@@ -1,10 +1,15 @@
 "use client";
 
-import type { AnimationStep, DecimalToBinaryStep, BinaryToDecimalStep } from "@/types/animation";
+import type { AnimationStep, DecimalToBinaryStep, BinaryToDecimalStep, BinaryToOctalStep, BinaryToHexStep, HexToBinaryStep, OctalToBinaryStep } from "@/types/animation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState, useEffect, useCallback } from "react";
 import { AnimationControls } from "./animation-controls";
 import { DecimalToBinaryAnimation } from "./decimal-to-binary-animation";
+import { BinaryToDecimalAnimation } from "./binary-to-decimal-animation";
+import { BinaryToOctalAnimation } from "./binary-to-octal-animation";
+import { BinaryToHexAnimation } from "./binary-to-hex-animation";
+import { HexToBinaryAnimation } from "./hex-to-binary-animation";
+import { OctalToBinaryAnimation } from "./octal-to-binary-animation";
 // Import other specific animation components here, e.g. BinaryToDecimalAnimation
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertCircle } from "lucide-react";
@@ -77,9 +82,39 @@ export function AnimationArea({ steps, conversionType }: AnimationAreaProps) {
       return <DecimalToBinaryAnimation step={currentStep as DecimalToBinaryStep} />;
     }
     // Add other conditions for BinaryToDecimal, etc.
-    // if (conversionType === "2-10" && (currentStep.type === "INITIAL" || currentStep.type === "CALCULATE_BIT_VALUE" || currentStep.type === "ADD_TO_SUM" || currentStep.type === "FINAL_RESULT")) {
-    //   return <BinaryToDecimalAnimation step={currentStep as BinaryToDecimalStep} />;
-    // }
+    if (conversionType === "2-10" && 
+        (currentStep.type === "INITIAL" || 
+         currentStep.type === "CALCULATE_BIT_VALUE" || 
+         currentStep.type === "ADD_TO_SUM" || 
+         currentStep.type === "FINAL_RESULT")) {
+      return <BinaryToDecimalAnimation step={currentStep as BinaryToDecimalStep} />;
+    }
+    if (conversionType === "2-8" && 
+        (currentStep.type === "INITIAL" || 
+         currentStep.type === "SHOW_GROUPS" || 
+         currentStep.type === "PROCESS_GROUP" || 
+         currentStep.type === "FINAL_RESULT")) {
+      return <BinaryToOctalAnimation step={currentStep as BinaryToOctalStep} />;
+    }
+    if (conversionType === "2-16" && 
+        (currentStep.type === "INITIAL" || 
+         currentStep.type === "SHOW_GROUPS_HEX" || 
+         currentStep.type === "PROCESS_GROUP_HEX" || 
+         currentStep.type === "FINAL_RESULT_HEX")) {
+      return <BinaryToHexAnimation step={currentStep as BinaryToHexStep} />;
+    }
+    if (conversionType === "16-2" && 
+        (currentStep.type === "INITIAL_HEX_TO_BIN" || 
+         currentStep.type === "PROCESS_HEX_DIGIT" || 
+         currentStep.type === "FINAL_RESULT_HEX_TO_BIN")) {
+      return <HexToBinaryAnimation step={currentStep as HexToBinaryStep} />;
+    }
+    if (conversionType === "8-2" && 
+        (currentStep.type === "INITIAL_OCT_TO_BIN" || 
+         currentStep.type === "PROCESS_OCT_DIGIT" || 
+         currentStep.type === "FINAL_RESULT_OCT_TO_BIN")) {
+      return <OctalToBinaryAnimation step={currentStep as OctalToBinaryStep} />;
+    }
 
     // Fallback for unhandled step types or conversion types
     return (

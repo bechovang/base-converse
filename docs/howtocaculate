@@ -1,0 +1,144 @@
+Đây là mô tả cách tính nhanh: 
+## Hướng Dẫn Chuyển Đổi Nhanh Giữa Các Hệ Cơ Số
+
+### Tổng Quan Các Phương Pháp Chuyển Đổi
+
+#### ✅ Chuyển đổi cơ bản
+
+| Chuyển đổi | Phương pháp | Đặc điểm |
+|------------|-------------|----------|
+| **10 → 2** | Trừ lũy thừa | Trực quan, nhanh |
+| **2 → 10** | Cộng vị trí bit | Đơn giản |
+| **2 → 16** | Nhóm 4 bit | Rất nhanh |
+| **16 → 2** | Tách từng ký tự | Dễ thực hiện |
+| **2 → 8** | Nhóm 3 bit | Tương tự như 2→16 |
+| **8 → 2** | Tách từng chữ số | Dễ thực hiện |
+
+#### ⚠️ Lưu ý chuyển đổi gián tiếp (nên làm để dễ hơn)
+
+* **10 → 16** → Nên chuyển theo **10 → 2 → 16**
+   * Vì từ thập phân sang nhị phân đã trực quan
+   * Rồi từ nhị phân sang hệ 16 chỉ cần nhóm 4 bit
+* **10 → 8** → Nên chuyển theo **10 → 2 → 8**
+   * Nhị phân dễ hình dung
+   * Rồi nhóm 3 bit sang hệ 8
+* **16 → 10** hoặc **8 → 10** → Nên chuyển theo **16/8 → 2 → 10**
+   * Từ hệ 16/8 sang nhị phân dễ nhờ
+   * Rồi nhẩm vị trí bit để tính ra hệ 10
+* **Tránh chuyển trực tiếp giữa 10 ↔ 16 hoặc 10 ↔ 8** bằng cách chia nhiều lần — thường lâu và dễ nhầm.
+
+### Phương Pháp Chi Tiết
+
+#### 1. Thập phân → Nhị phân (10 → 2)
+
+##### Phương pháp trừ lũy thừa:
+* Dựa vào các mốc lũy thừa của 2: 128, 64, 32, 16, 8, 4, 2, 1 (2⁷ → 2⁰).
+* Duyệt từng mốc từ lớn đến nhỏ:
+   * Nếu còn đủ số → viết `1`, rồi trừ đi.
+   * Nếu không đủ số → viết `0`.
+* Kết quả là dãy nhị phân tương ứng.
+
+##### Ví dụ minh họa với câu chuyện:
+
+Mẹ có 97 cây vàng chia cho các con theo cách phân phối theo luỹ thừa của 2: 1, 2, 4, 8, 16... cây cho mỗi lần.
+
+**Cách hiểu trực quan:**
+1. Mỗi cột tương ứng với số cây vàng theo luỹ thừa của 2 (2⁰, 2¹, 2², 2³...)
+2. Đối chiếu với số cây vàng cần chia (97):
+    - Với 128 cây (2⁷): Không đủ số → **Viết 0**
+    - Với 64 cây (2⁶): Có đủ → **Viết 1** và trừ đi → còn lại 97-64 = 33 cây
+    - Với 32 cây (2⁵): Có đủ → **Viết 1** và trừ đi → còn lại 33-32 = 1 cây
+    - Với 16 cây (2⁴): Không đủ số → **Viết 0**
+    - Với 8 cây (2³): Không đủ số → **Viết 0**
+    - Với 4 cây (2²): Không đủ số → **Viết 0**
+    - Với 2 cây (2¹): Không đủ số → **Viết 0**
+    - Với 1 cây (2⁰): Có đủ → **Viết 1** và trừ đi → còn lại 0 cây
+
+| 128 | 64 | 32 | 16 | 8 | 4 | 2 | 1 |
+|-----|----|----|----|----|---|---|---|
+| 0   | 1  | 1  | 0  | 0  | 0 | 0 | 1 |
+
+**Kết quả:** 97₁₀ = 01100001₂ = 1100001₂ (bỏ số 0 đầu)
+
+**Ưu điểm của cách này:**
+- Trực quan, dễ hình dung
+- Nhanh hơn cách chia liên tiếp vì bạn có thể xác định ngay mỗi bit
+- Giúp hình dung rõ cấu trúc nhị phân và giá trị vị trí
+
+#### 2. Nhị phân → Thập phân (2 → 10)
+
+* Gán giá trị mỗi bit từ **phải sang trái**: 1, 2, 4, 8, 16, 32,...
+* Cộng các giá trị tại vị trí có bit `1`.
+
+**Ví dụ:** 1100001₂ → (1×2⁶) + (1×2⁵) + (0×2⁴) + (0×2³) + (0×2²) + (0×2¹) + (1×2⁰) = 64 + 32 + 1 = 97₁₀
+
+#### 3. Nhị phân → Thập lục phân (2 → 16)
+
+* Nhóm **4 bit một**, từ phải sang trái.
+* Nếu nhóm đầu không đủ 4 bit → **thêm số 0 vào đầu** nhóm.
+* Dùng bảng: 0000 → 0, ..., 1001 → 9, 1010 → A, ..., 1111 → F.
+* Ghép các ký tự lại thành kết quả hệ 16.
+
+**Ví dụ 1:** Chuyển đổi 11100₂ sang hệ 16:
+1. **Nhóm 4 bit:** (0001)(1100) ← thêm số 0 vào đầu nhóm đầu tiên
+2. **Chuyển đổi từng nhóm:**
+    - (0001)₂ = 1₁₆
+    - (1100)₂ = 12₁₆ = C₁₆
+3. **Ghép lại:** 1C₁₆
+
+**Ví dụ 2:** Chuyển đổi 1001100₂ sang hệ 16:
+1. **Nhóm 4 bit:** (0100)(1100) ← thêm 0 vào đầu nhóm đầu tiên nếu không đủ 4
+2. **Chuyển đổi từng nhóm:**
+    - (0100)₂ = 4₁₆
+    - (1100)₂ = C₁₆
+3. **Ghép lại:** 4C₁₆
+
+#### 4. Thập lục phân → Nhị phân (16 → 2)
+
+* Tách từng ký tự hex, chuyển thành **4 bit nhị phân**:
+   * A → 1010, B → 1011, ..., F → 1111
+* Ghép các nhóm lại thành chuỗi nhị phân.
+
+**Ví dụ:** 4C₁₆ → 4 = 0100, C = 1100 → 01001100₂
+
+#### 5. Nhị phân → Bát phân (2 → 8)
+
+* Nhóm **3 bit một**, từ phải sang trái.
+* Nếu nhóm đầu không đủ 3 bit → **thêm 0 vào đầu** nhóm.
+* Dùng bảng: 000 → 0, ..., 111 → 7.
+* Ghép kết quả lại thành số hệ 8.
+
+**Ví dụ:** 1100001₂:
+1. **Nhóm 3 bit:** (001)(100)(001) ← thêm 0 vào đầu nếu không đủ 3
+2. **Chuyển đổi:**
+    - (001)₂ = 1₈
+    - (100)₂ = 4₈
+    - (001)₂ = 1₈
+3. **Ghép lại:** 141₈
+
+#### 6. Bát phân → Nhị phân (8 → 2)
+
+* Tách từng chữ số hệ 8, đổi thành **3 bit nhị phân**:
+   * 0 → 000, 1 → 001, ..., 7 → 111
+* Ghép toàn bộ lại thành chuỗi nhị phân.
+
+**Ví dụ:** 141₈:
+1. **Chuyển từng chữ số:**
+    - 1 → 001
+    - 4 → 100
+    - 1 → 001
+2. **Ghép lại:** 001100001₂ = 1100001₂ (bỏ số 0 đầu)
+
+### Mẹo Nhẩm và Ghi Nhớ Nhanh
+
+* **Nhóm theo số bit:**
+   * Hệ 16: nhóm **4 bit**
+   * Hệ 8: nhóm **3 bit**
+* **Từ phải sang trái, nhẩm giá trị vị trí:**
+   * 1, 2, 4 (cho nhóm 3 bit)
+   * 1, 2, 4, 8 (cho nhóm 4 bit)
+* **Chữ cái hệ 16:**
+   * A = 10, B = 11, ..., F = 15
+* Không cần học thuộc bảng → chỉ cần nhóm + nhẩm là đủ.
+
+
