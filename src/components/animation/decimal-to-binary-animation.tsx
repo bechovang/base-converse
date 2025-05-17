@@ -18,8 +18,8 @@ const itemVariants = {
 };
 
 const highlightVariants = {
-  initial: { scale: 1,  backgroundColor: "transparent" },
-  highlight: { scale: 1.1, backgroundColor: "hsl(var(--primary) / 0.3)", transition: { duration: 0.3 } },
+  initial: { scale: 1 }, 
+  highlight: { scale: 1.1, transition: { duration: 0.3 } },
   dim: { opacity: 0.5, transition: {duration: 0.3} }
 };
 
@@ -31,31 +31,74 @@ export function DecimalToBinaryAnimation({ step }: DecimalToBinaryAnimationProps
       case "INITIAL":
         return (
           <div className="space-y-3">
-            <p>Converting: <span className="font-bold text-primary text-xl">{step.decimal}</span></p>
-            {step.powers.length > 0 && <p>Powers of 2 to check: {step.powers.join(", ")}</p>}
+            <p>Converting: <span className="font-bold text-primary text-xl">{step.decimal}</span> (Decimal)</p>
+            {step.powers.length > 0 && 
+              <p>Powers of 2 to check: 
+                <span className="font-mono ml-1">
+                  {step.powers.join(", ")}
+                </span>
+              </p>}
             <p className="text-sm text-muted-foreground">{step.explanation}</p>
           </div>
         );
-      case "COMPARE":
+      case "PROCESS_DECIMAL_POWER_STEP":
+        const bitIndex = step.currentBinary.length -1;
         return (
-          <div className="space-y-3">
-            <p>Remaining: <span className="font-bold text-xl">{step.workingDecimal}</span></p>
-            <p>
-              Comparing with <motion.span custom={0} initial="initial" animate="highlight" variants={highlightVariants} className="font-bold text-primary p-1 rounded-md">2<sup>{step.power}</sup> ({step.powerValue})</motion.span>
-            </p>
-            <p>{step.workingDecimal} {step.canSubtract ? ">=" : "<"} {step.powerValue} ? <span className={step.canSubtract ? "text-green-400" : "text-red-400"}>{step.canSubtract ? "Yes" : "No"}</span></p>
-            <p className="text-sm text-muted-foreground">{step.explanation}</p>
-            {step.currentBinary && <p>Binary so far: <span className="font-mono">{step.currentBinary}</span></p>}
-          </div>
-        );
-      case "RESULT_BIT":
-        return (
-          <div className="space-y-3">
-            <p>Wrote bit: <motion.span custom={0} initial="hidden" animate="visible" className="font-bold text-2xl text-accent p-1 rounded-md">{step.bit}</motion.span></p>
-            <p>Checked against: <span className="font-bold text-primary">2<sup>{step.power}</sup> ({step.powerValue})</span></p>
-            <p>Remaining decimal: <span className="font-bold text-xl">{step.workingDecimalAfterSubtract}</span></p>
-            <p>Binary so far: <span className="font-mono font-bold">{step.currentBinary}</span></p>
-            <p className="text-sm text-muted-foreground">{step.explanation}</p>
+          <div className="space-y-4 p-1">
+            {/* Table Display */}
+            <div className="w-full overflow-x-auto">
+              <table className="min-w-full border-collapse text-center table-fixed">
+                <thead>
+                  <tr className="bg-muted">
+                    {step.allPowers.map((pValue, index) => (
+                      <th key={`header-${index}`} className={`border p-2 font-mono text-sm md:text-base ${index === bitIndex ? 'text-primary font-bold ring-1 ring-primary' : ''}`}>
+                        {pValue}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    {step.allPowers.map((_, index) => (
+                      <td key={`bit-cell-${index}`} className={`border p-2 font-mono text-xl md:text-2xl ${index === bitIndex ? 'text-accent font-bold ring-1 ring-primary scale-110' : 'text-muted-foreground'}`}>
+                        {index < step.currentBinary.length ? step.currentBinary[index] : "-"}
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Detailed explanation for current power */}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm border p-3 rounded-md bg-muted/50 mt-4">
+              <p>Remaining Decimal:</p>
+              <p className="font-bold text-lg justify-self-end">{step.workingDecimalBefore}</p>
+              
+              <p>Current Power (2<sup>{step.power}</sup>):</p>
+              <motion.p 
+                custom={0} initial="initial" animate="highlight" variants={highlightVariants}
+                className="font-bold text-lg text-primary justify-self-end p-0.5 rounded-sm"
+              >
+                {step.powerValue}
+              </motion.p>
+
+              <p>{step.workingDecimalBefore} ≥ {step.powerValue} ?</p>
+              <p className={`font-bold text-lg justify-self-end ${step.canSubtract ? "text-green-500" : "text-red-500"}`}>
+                {step.canSubtract ? "Yes" : "No"}
+              </p>
+
+              <p>Binary Bit Written:</p>
+              <motion.p 
+                key={step.currentBinary} custom={1} initial="hidden" animate="visible" variants={itemVariants}
+                className={`font-bold text-2xl justify-self-end ${step.bit === "1" ? "text-accent" : "text-muted-foreground"}`}
+              >
+                {step.bit}
+              </motion.p>
+            </div>
+            
+            <p className="mt-3">New Remaining Decimal: <span className="font-bold text-lg">{step.workingDecimalAfter}</span></p>
+            <p>Binary Result So Far: <span className="font-mono font-bold text-lg tracking-wider">{step.currentBinary}</span></p>
+            <p className="text-xs text-muted-foreground italic mt-2">{step.explanation}</p>
           </div>
         );
       case "FINAL_RESULT":

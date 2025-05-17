@@ -62,56 +62,51 @@ export async function generateDecimalToBinarySteps(decimalInput: number): Promis
   }
   powers.sort((a, b) => b - a); // Ensure descending order [..., 4, 2, 1, 0] for powers of 2.
 
+  const powersExponents = powers; // powers array already stores exponents [6, 5, ...]
+  const powerValues = powersExponents.map(p => Math.pow(2,p)); // [64, 32, ...]
+
   steps.push({
     type: "INITIAL",
     decimal: num,
-    powers: powers.map(power => Math.pow(2,power)),
+    powers: powerValues, // Pass actual values for display
     workingDecimal: num,
     currentBinary: "",
     explanation: `Starting conversion of ${num} (decimal) to binary. We'll use powers of 2: ${powers.map(pVal => Math.pow(2,pVal)).join(', ')}.`,
   });
 
   let binaryResult = "";
-  let workingDecimal = num;
+  let workingDecimalCopy = num; // Use a copy for step generation logic
 
   for (const power of powers) {
     const powerValue = Math.pow(2, power);
-    const canSubtract = workingDecimal >= powerValue;
-
-    steps.push({
-      type: "COMPARE",
-      power: power,
-      powerValue: powerValue,
-      workingDecimal: workingDecimal,
-      canSubtract: canSubtract,
-      currentBinary: binaryResult,
-      explanation: `Comparing remaining value ${workingDecimal} with 2^${power} (${powerValue}). ${workingDecimal} is ${canSubtract ? 'greater than or equal to' : 'less than'} ${powerValue}.`,
-    });
+    const currentWorkingDecimal = workingDecimalCopy;
+    const canSubtract = currentWorkingDecimal >= powerValue;
+    let bit: "0" | "1";
+    let explanationText = "";
 
     if (canSubtract) {
+      bit = "1";
+      workingDecimalCopy -= powerValue;
       binaryResult += "1";
-      workingDecimal -= powerValue;
-      steps.push({
-        type: "RESULT_BIT",
-        bit: "1",
-        power: power,
-        powerValue: powerValue,
-        workingDecimalAfterSubtract: workingDecimal,
-        currentBinary: binaryResult,
-        explanation: `Write '1'. Subtract ${powerValue}. New remaining value: ${workingDecimal}. Binary so far: ${binaryResult}.`
-      });
+      explanationText = `Comparing ${currentWorkingDecimal} with 2^${power} (${powerValue}). ${currentWorkingDecimal} >= ${powerValue}. Write '1'. Subtract ${powerValue}. Remaining: ${workingDecimalCopy}. Binary: ${binaryResult}.`;
     } else {
+      bit = "0";
       binaryResult += "0";
-      steps.push({
-        type: "RESULT_BIT",
-        bit: "0",
-        power: power,
-        powerValue: powerValue,
-        workingDecimalAfterSubtract: workingDecimal, // No change
-        currentBinary: binaryResult,
-        explanation: `Write '0'. Remaining value: ${workingDecimal}. Binary so far: ${binaryResult}.`
-      });
+      explanationText = `Comparing ${currentWorkingDecimal} with 2^${power} (${powerValue}). ${currentWorkingDecimal} < ${powerValue}. Write '0'. Remaining: ${workingDecimalCopy}. Binary: ${binaryResult}.`;
     }
+
+    steps.push({
+      type: "PROCESS_DECIMAL_POWER_STEP",
+      allPowers: powerValues, // Added: Pass the full list of power values
+      power: power, // power is the exponent
+      powerValue: powerValue,
+      workingDecimalBefore: currentWorkingDecimal,
+      canSubtract: canSubtract,
+      bit: bit,
+      workingDecimalAfter: workingDecimalCopy,
+      currentBinary: binaryResult,
+      explanation: explanationText,
+    });
   }
   
   // Ensure the result isn't empty if all bits were zero (e.g. for num=0, handled, but good practice)
@@ -358,7 +353,7 @@ export async function generateHexToBinarySteps(hexInput: string): Promise<{ step
     finalBinaryResult = binaryResult.replace(/^0+/, '');
     if (finalBinaryResult === '') finalBinaryResult = '0'; // case where hex is "0"
   }
-  if (binaryInput === "0") finalBinaryResult = "0"; // ensure hex "0" results in binary "0"
+  if (upperHexInput === "0") finalBinaryResult = "0"; // ensure hex "0" results in binary "0"
 
 
   steps.push({

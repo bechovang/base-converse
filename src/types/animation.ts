@@ -8,20 +8,14 @@ export type DecimalToBinaryStep =
       explanation: string;
     }
   | {
-      type: "COMPARE";
+      type: "PROCESS_DECIMAL_POWER_STEP";
+      allPowers: number[];
       power: number;
       powerValue: number;
-      workingDecimal: number;
+      workingDecimalBefore: number;
       canSubtract: boolean;
-      currentBinary: string;
-      explanation: string;
-    }
-  | {
-      type: "RESULT_BIT";
       bit: "0" | "1";
-      power: number;
-      powerValue: number;
-      workingDecimalAfterSubtract: number;
+      workingDecimalAfter: number;
       currentBinary: string;
       explanation: string;
     }

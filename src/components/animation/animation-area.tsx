@@ -78,7 +78,10 @@ export function AnimationArea({ steps, conversionType }: AnimationAreaProps) {
       return <div className="p-4 text-center text-muted-foreground">Không có bước hoạt ảnh nào hoặc chuyển đổi này không được hỗ trợ hoạt ảnh.</div>;
     }
     // Determine which animation component to render based on step type or conversionType
-    if (conversionType === "10-2" && (currentStep.type === "INITIAL" || currentStep.type === "COMPARE" || currentStep.type === "RESULT_BIT" || currentStep.type === "FINAL_RESULT")) {
+    if (conversionType === "10-2" && 
+        (currentStep.type === "INITIAL" || 
+         currentStep.type === "PROCESS_DECIMAL_POWER_STEP" ||
+         currentStep.type === "FINAL_RESULT")) {
       return <DecimalToBinaryAnimation step={currentStep as DecimalToBinaryStep} />;
     }
     // Add other conditions for BinaryToDecimal, etc.
@@ -149,7 +152,7 @@ export function AnimationArea({ steps, conversionType }: AnimationAreaProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-[300px] w-full p-4">
+        <ScrollArea className="h-[450px] w-full p-4">
            {renderAnimationContent()}
         </ScrollArea>
         <AnimationControls
