@@ -159,7 +159,15 @@ export type OctalToBinaryStep =
       explanation: string;
     };
 
-// Add other step types as needed e.g. BinaryToHexStep, HexToBinaryStep etc.
+export type GenericConversionInfoStep = {
+  type: "GENERIC_INFO";
+  message: string;
+  inputValue: string;
+  outputValue: string;
+  fromBaseLabel: string;
+  toBaseLabel: string;
+  recommendation?: string; // Optional: for text like "Consider converting via binary for clarity."
+};
 
 export type AnimationStep = 
   DecimalToBinaryStep | 
@@ -167,4 +175,5 @@ export type AnimationStep =
   BinaryToOctalStep | 
   BinaryToHexStep | 
   HexToBinaryStep | 
-  OctalToBinaryStep; // Union of all step types
+  OctalToBinaryStep | 
+  GenericConversionInfoStep; // Union of all step types

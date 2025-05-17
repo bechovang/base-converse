@@ -1,5 +1,5 @@
 "use server";
-import type { DecimalToBinaryStep, BinaryToDecimalStep, AnimationStep } from "@/types/animation";
+import type { DecimalToBinaryStep, BinaryToDecimalStep, AnimationStep, GenericConversionInfoStep } from "@/types/animation";
 import type { Base } from "./constants";
 import { getBaseLabel, isValidNumberForBase } from "./constants";
 
@@ -479,17 +479,31 @@ export async function convertNumber(
      return { result: "", steps: [], explanation: `Error converting to ${getBaseLabel(toBase)}.` };
   }
 
-  // Placeholder steps for non-animated conversions
-  const placeholderSteps: AnimationStep[] = [
+  // For conversions not yet animated, show a strategy note.
+  const fromLabel = getBaseLabel(fromBase);
+  const toLabel = getBaseLabel(toBase);
+  const referenceText = "Tham khảo 'Lưu ý chiến lược chuyển đổi' ở góc trái bên dưới.";
+  let recommendationText = `Để hiểu rõ hơn, bạn có thể thử chuyển đổi gián tiếp. ${referenceText}`;
+
+  if (fromBase !== 2 && toBase !== 2) { // Neither is binary, so suggest X -> 2 -> Y
+    recommendationText = `Chuyển đổi gián tiếp đề xuất: ${fromLabel} → Nhị phân (2) → ${toLabel}. ${referenceText}`;
+  } else if (fromBase !== 2 && toBase === 2) { // X -> 2 (This is already a direct animated path, but if it fell through)
+    recommendationText = `Chuyển đổi ${fromLabel} → Nhị phân (2) thường trực quan. ${referenceText}`;
+  } else if (fromBase === 2 && toBase !== 2) { // 2 -> Y (This is also a direct animated path, but if it fell through)
+    recommendationText = `Chuyển đổi Nhị phân (2) → ${toLabel} thường trực quan. ${referenceText}`;
+  }
+  
+  const strategySteps: GenericConversionInfoStep[] = [
     {
-      type: "INITIAL",
-      // @ts-ignore
-      decimal: fromBase === 10 ? parseInt(value) : value, 
-      explanation: `Converting ${value} from ${getBaseLabel(fromBase)} to ${getBaseLabel(toBase)}. (Animation for this path is not yet implemented).`
-    },
-    // @ts-ignore
-    { type: "FINAL_RESULT", binaryResult: finalResult, originalDecimal: value, explanation: `Result: ${finalResult}` }
+      type: "GENERIC_INFO",
+      message: "Lưu ý chiến lược chuyển đổi.",
+      inputValue: value,
+      outputValue: finalResult,
+      fromBaseLabel: fromLabel,
+      toBaseLabel: toLabel,
+      recommendation: recommendationText
+    }
   ];
 
-  return { result: finalResult, steps: placeholderSteps };
+  return { result: finalResult, steps: strategySteps as AnimationStep[] };
 }

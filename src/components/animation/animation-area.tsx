@@ -1,6 +1,6 @@
 "use client";
 
-import type { AnimationStep, DecimalToBinaryStep, BinaryToDecimalStep, BinaryToOctalStep, BinaryToHexStep, HexToBinaryStep, OctalToBinaryStep } from "@/types/animation";
+import type { AnimationStep, DecimalToBinaryStep, BinaryToDecimalStep, BinaryToOctalStep, BinaryToHexStep, HexToBinaryStep, OctalToBinaryStep, GenericConversionInfoStep } from "@/types/animation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState, useEffect, useCallback } from "react";
 import { AnimationControls } from "./animation-controls";
@@ -117,6 +117,37 @@ export function AnimationArea({ steps, conversionType }: AnimationAreaProps) {
          currentStep.type === "PROCESS_OCT_DIGIT" || 
          currentStep.type === "FINAL_RESULT_OCT_TO_BIN")) {
       return <OctalToBinaryAnimation step={currentStep as OctalToBinaryStep} />;
+    }
+    if (currentStep.type === "GENERIC_INFO") {
+      const genericStep = currentStep as GenericConversionInfoStep;
+      return (
+        <div className="p-4 space-y-3 text-center">
+          <AlertCircle className="mx-auto h-12 w-12 text-blue-500 mb-3" />
+          <h3 className="text-xl font-semibold text-primary">{genericStep.message}</h3>
+          <p className="text-muted-foreground">
+            Chuyển đổi trực tiếp từ <span className="font-semibold">{genericStep.fromBaseLabel}</span> sang <span className="font-semibold">{genericStep.toBaseLabel}</span>:
+          </p>
+          <p className="font-mono text-lg">
+            <span className="text-primary">{genericStep.inputValue}</span> ({genericStep.fromBaseLabel}) → <span className="text-green-500">{genericStep.outputValue}</span> ({genericStep.toBaseLabel})
+          </p>
+          {genericStep.recommendation && 
+            <p className="text-sm text-muted-foreground mt-2 italic bg-muted p-2 rounded-md">
+              {(() => {
+                const parts = genericStep.recommendation.split('. ');
+                const pathPart = parts[0];
+                const referencePart = parts.length > 1 ? parts.slice(1).join('. ') : null;
+                return (
+                  <>
+                    <strong className="text-primary/90 font-semibold">{pathPart}.</strong>
+                    {referencePart && <span className="ml-1">{referencePart}</span>}
+                  </>
+                );
+              })()}
+            </p>
+          }
+          <p className="text-xs text-muted-foreground mt-4">Hoạt ảnh chi tiết cho loại chuyển đổi này chưa được triển khai.</p>
+        </div>
+      );
     }
 
     // Fallback for unhandled step types or conversion types
